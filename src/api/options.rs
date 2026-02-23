@@ -32,6 +32,8 @@ bitflags! {
         const FAIL_ON_INVALID_MAP_PROPERTY = 0b_0001_0000_0000;
         /// Fast operators mode?
         const FAST_OPS = 0b_0010_0000_0000;
+        /// Determines if 'a' is a char or a string.
+        const SINGLE_QUOTES_ARE_STRINGS = 0b_0100_0000_0000;
     }
 }
 
@@ -74,6 +76,20 @@ impl Engine {
     #[inline(always)]
     pub fn set_allow_if_expression(&mut self, enable: bool) -> &mut Self {
         self.options.set(LangOptions::IF_EXPR, enable);
+        self
+    }
+    /// Can single quote strings be used or do they resolve to char?
+    #[inline(always)]
+    #[must_use]
+    pub const fn allow_single_quote_strings(&self) -> bool {
+        self.options
+            .intersects(LangOptions::SINGLE_QUOTES_ARE_STRINGS)
+    }
+    /// Set whether single quotes can be used for strings.
+    #[inline(always)]
+    pub fn set_allow_single_quote_strings(&mut self, enable: bool) -> &mut Self {
+        self.options
+            .set(LangOptions::SINGLE_QUOTES_ARE_STRINGS, enable);
         self
     }
     /// Is `switch` expression allowed?

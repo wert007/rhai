@@ -17,3 +17,22 @@ fn test_chars() {
     let _ = engine.eval::<char>(r"'\uhello'").unwrap_err();
     let _ = engine.eval::<char>("''").unwrap_err();
 }
+
+#[test]
+fn test_single_quote_strings() {
+    let mut engine = Engine::new();
+    engine.set_allow_single_quote_strings(true);
+
+    assert_eq!(engine.eval::<String>("'y'").unwrap(), "y");
+    assert_eq!(engine.eval::<String>(r"'\''").unwrap(), "'");
+    assert_eq!(engine.eval::<String>(r#"'"'"#).unwrap(), "\"");
+    assert_eq!(engine.eval::<String>(r"'\u2764'").unwrap(), "❤");
+
+    #[cfg(not(feature = "no_index"))]
+    assert_eq!(engine.eval::<char>(r#"let x="hello"; x[2]"#).unwrap(), 'l');
+    // #[cfg(not(feature = "no_index"))]
+    // assert_eq!(engine.eval::<String>(r#"let y="hello"; y[2]='$'; y"#).unwrap(), "he$lo");
+
+    let _ = engine.eval::<char>(r"'\uhello'").unwrap_err();
+    let _ = engine.eval::<char>("''").unwrap_err();
+}

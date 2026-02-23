@@ -1190,6 +1190,9 @@ pub struct TokenizeState {
     ///
     /// Set to `Some` to begin tracking this information.
     pub last_token: Option<SmartString>,
+    /// Should 'a' be a char or a string? And is 'abc' a valid string or a
+    /// compile time error?
+    pub single_quotes_are_strings: bool,
 }
 
 /// _(internals)_ Trait that encapsulates a peekable character input stream.
@@ -1996,19 +1999,25 @@ fn get_next_token_inner(
                     .map_or_else(
                         |(err, err_pos)| (Token::LexError(err.into()), err_pos),
                         |(result, ..)| {
-                            let mut chars = result.chars();
-                            let first = chars.next().unwrap();
-
-                            if chars.next().is_some() {
-                                (
-                                    Token::LexError(LERR::MalformedChar(result.to_string()).into()),
-                                    start_pos,
-                                )
+                            if state.single_quotes_are_strings {
+                                (Token::StringConstant(Box::new(result)), start_pos)
                             } else {
-                                (Token::CharConstant(first), start_pos)
+                                let mut chars = result.chars();
+                                let first = chars.next().unwrap();
+
+                                if chars.next().is_some() {
+                                    (
+                                        Token::LexError(
+                                            LERR::MalformedChar(result.to_string()).into(),
+                                        ),
+                                        start_pos,
+                                    )
+                                } else {
+                                    (Token::CharConstant(first), start_pos)
+                                }
                             }
                         },
-                    )
+                    );
             }
 
             // Braces
@@ -2886,6 +2895,7 @@ impl Engine {
                     include_comments: false,
                     is_within_text_terminated_by: None,
                     last_token: None,
+                    single_quotes_are_strings: self.allow_single_quote_strings(),
                 },
                 pos: Position::new(1, 0),
                 stream: MultiInputsStream {
