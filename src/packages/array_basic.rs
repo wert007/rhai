@@ -1098,6 +1098,18 @@ pub mod array_functions {
     pub fn find_map(ctx: NativeCallContext, array: &mut Array, filter: FnPtr) -> RhaiResult {
         find_map_starting_from(ctx, array, filter, 0)
     }
+
+    /// Flattens an array of array into a array.
+    #[rhai_fn(return_raw, pure)]
+    pub fn flatten(ctx: NativeCallContext, array: &mut Array) -> RhaiResult {
+        let mut result = Array::new();
+        for a in array {
+            for a in &*a.as_array_ref()? {
+                result.push(a.clone());
+            }
+        }
+        Ok(Dynamic::from_array(result))
+    }
     /// Iterate through all the elements in the array, starting from a particular `start` position,
     /// applying a `mapper` function to each element in turn, and return the first result that is not `()`.
     /// Otherwise, `()` is returned.

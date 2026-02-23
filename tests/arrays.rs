@@ -493,6 +493,12 @@ fn test_arrays_map_reduce() {
 }
 
 #[test]
+fn test_array_flatten() {
+    let engine = Engine::new();
+    assert_eq!(engine.eval::<i64>("[[1], [2, 3]].flatten()[2]").unwrap(), 3);
+}
+
+#[test]
 fn test_arrays_elvis() {
     let engine = Engine::new();
 
